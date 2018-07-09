@@ -1,5 +1,5 @@
 {
-  "name": "react-popper",
+  "name": "@react-bootstrap/react-popper",
   "version": "1.0.0",
   "description": "React wrapper around Popper.js",
   "license": "MIT",
