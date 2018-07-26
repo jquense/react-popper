@@ -132,24 +132,20 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
   getOutOfBoundariesState = () =>
     this.state.data ? this.state.data.hide : undefined;
 
-  destroy = () => {
-    if (!this.popperInstance) return false;
+  destroyPopperInstance = () => {
+    if (!this.popperInstance) return;
+
     this.popperInstance.destroy();
     this.popperInstance = null;
-    return true;
-  };
-
-  destroyPopperInstance = (callback: () => void) => {
-    if (this.destroy()) this.forceUpdate(callback);
   };
 
   updatePopperInstance = () => {
-    this.destroy();
+    this.destroyPopperInstance();
 
     const { popperNode } = this;
-    const { referenceElement, init } = this.props;
+    const { referenceElement } = this.props;
 
-    if (!referenceElement || !popperNode || !init) return;
+    if (!referenceElement || !popperNode) return;
 
     this.popperInstance = new PopperJS(
       referenceElement,
@@ -167,7 +163,6 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
   componentDidUpdate(prevProps: PopperProps) {
     // If the Popper.js options have changed, update the instance (destroy + create)
     if (
-      this.props.init !== prevProps.init ||
       this.props.placement !== prevProps.placement ||
       this.props.eventsEnabled !== prevProps.eventsEnabled ||
       this.props.referenceElement !== prevProps.referenceElement ||
@@ -178,7 +173,7 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
   }
 
   componentWillUnmount() {
-    this.destroy();
+    this.destroyPopperInstance();
   }
 
   render() {
