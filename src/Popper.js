@@ -17,6 +17,10 @@ type ReferenceElement = ReferenceObject | HTMLElement | null;
 type StyleOffsets = { top: number, left: number };
 type StylePosition = { position: 'absolute' | 'fixed' };
 
+type PopperInstance = PopperJS$Instance & {
+  enableEventListeners(): void,
+  disableEventListeners(): void,
+};
 export type PopperArrowProps = {
   ref: getRefFn,
   style: StyleOffsets & Style,
@@ -73,7 +77,7 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
     lastPropsPlacement: undefined,
   };
 
-  popperInstance: ?PopperJS$Instance;
+  popperInstance: ?PopperInstance;
 
   popperNode: ?HTMLElement = null;
   arrowNode: ?HTMLElement = null;
@@ -165,11 +169,11 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
 
     if (!referenceElement || !popperNode) return;
 
-    this.popperInstance = new PopperJS(
+    this.popperInstance = (new PopperJS(
       referenceElement,
       popperNode,
       this.getOptions()
-    );
+    ): any);
   };
 
   scheduleUpdate = () => {
@@ -182,7 +186,6 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
     // If the Popper.js options have changed, update the instance (destroy + create)
     if (
       this.props.placement !== prevProps.placement ||
-      this.props.eventsEnabled !== prevProps.eventsEnabled ||
       this.props.referenceElement !== prevProps.referenceElement ||
       this.props.positionFixed !== prevProps.positionFixed
     ) {
@@ -190,12 +193,20 @@ export class InnerPopper extends React.Component<PopperProps, PopperState> {
       return;
     }
 
+    if (
+      this.props.eventsEnabled !== prevProps.eventsEnabled &&
+      this.popperInstance
+    ) {
+      this.props.eventsEnabled
+        ? this.popperInstance.enableEventListeners()
+        : this.popperInstance.disableEventListeners();
+    }
+
     // A placement difference in state means popper determined a new placement
     // apart from the props value. By the time the popper element is rendered with
     // the new position Popper has already measured it, if the place change triggers
     // a size change it will result in a misaligned popper. So we schedule an update to be sure.
     if (prevState.placement !== this.state.placement) {
-      console.log('placement shifted!');
       this.scheduleUpdate();
     }
   }
